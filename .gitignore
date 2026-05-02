@@ -1,0 +1,43 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+*.tfvars
+.terraform.lock.hcl
+crash.log
+
+# Helm
+charts/
+*.tgz
+Chart.lock
+
+# Kubernetes
+kubeconfig
+.kube/
+kubectl-*
+
+# Environment & Secrets
+.env
+*.env
+secrets.yaml
+values-secrets.yaml
+
+# AWS Specific
+.aws/
+credentials
+config
+
+# Local development
+.DS_Store
+*.log
+*.tmp
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Helm rendered output (if you ever render locally)
+rendered/
