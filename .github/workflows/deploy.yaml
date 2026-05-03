@@ -2,7 +2,7 @@ name: Continous Deployment
 
 on:
   workflow_run:
-    workflows: ["Backend CI - Build & Scan"]
+    workflows: ["Backend CI - Build & Scan", "CI Frontend - Build & Scan"]
     types: [completed]
     branches: [main]
 
@@ -15,10 +15,15 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Update k8s Manifests
+      - name: Build and Load Images to Kind
         run: |
-          sed -i "s|image: backend:latest|image: ghcr.io/${{ github.repository }}/backend:latest|g" k8s/manifests/backend.yaml
-          sed -i "s|image: frontend:latest|image: ghcr.io/${{ github.repository }}/frontend:latest|g" k8s/manifests/frontend.yaml
+          # Build images locally on the runner
+          docker build -t backend:latest ./backend
+          docker build -t frontend:latest ./frontend
+          
+          # Load them into the kind cluster
+          kind load docker-image backend:latest --name secure-platform-cluster
+          kind load docker-image frontend:latest --name secure-platform-cluster
 
       - name: Deploy to K8s
         run: |
