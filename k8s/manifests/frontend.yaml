@@ -15,9 +15,28 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: secure-frontend
+          image: frontend:latest
           ports:
             - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            limits:
+              cpu: "200m"
+              memory: "64Mi"
+            requests:
+              cpu: "100m"
+              memory: "32Mi"
 ---
 kind: Service
 apiVersion: v1
@@ -25,6 +44,7 @@ metadata:
   name: frontend-service
   namespace: secure-app
 spec:
+  type: NodePort
   selector:
     app: frontend
   ports:

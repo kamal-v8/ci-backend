@@ -1,0 +1,32 @@
+name: Continous Deployment
+
+on:
+  workflow_run:
+    workflows: ["Backend CI - Build & Scan"]
+    types: [completed]
+    branches: [main]
+
+jobs:
+  deploy-to-local:
+    runs-on: self-hosted
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Update k8s Manifests
+        run: |
+          sed -i "s|image: backend:latest|image: ghcr.io/${{ github.repository }}/backend:latest|g" k8s/manifests/backend.yaml
+          sed -i "s|image: frontend:latest|image: ghcr.io/${{ github.repository }}/frontend:latest|g" k8s/manifests/frontend.yaml
+
+      - name: Deploy to K8s
+        run: |
+          kubectl apply -f k8s/manifests/network-policy.yaml
+          kubectl apply -f k8s/manifests/backend.yaml
+          kubectl apply -f k8s/manifests/frontend.yaml
+
+      - name: Verify Deployment
+        run: |
+          kubectl rollout status deployment/backend-deployment -n secure-app
+          kubectl rollout status deployment/frontend-deployment -n secure-app

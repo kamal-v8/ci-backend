@@ -38,11 +38,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build & Push Docker Image
-        uses: docker/build-push-action@v5
+      - name: Build Docker Image Locally
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/frontend:latest ./frontend
+
+      - name: Container Security Scan(Trivy)
+        uses: aquasecurity/trivy-action@master
         with:
-          context: ./frontend
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}/frontend:latest
-            ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
+          image-ref: "ghcr.io/${{ github.repository }}/frontend:latest"
+          format: "table"
+          exit-code: 1
+          ignore-unfixed: true
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+
+      - name: Push Docker Image
+        run: |
+          docker push ghcr.io/${{ github.repository }}/frontend:latest
