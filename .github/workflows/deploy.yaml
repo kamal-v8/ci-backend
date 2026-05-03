@@ -25,6 +25,12 @@ jobs:
           kind load docker-image backend:latest --name secure-platform-cluster
           kind load docker-image frontend:latest --name secure-platform-cluster
 
+      - name: Debug Manifests
+        run: |
+          echo "Checking manifests before apply..."
+          grep "image:" k8s/manifests/frontend.yaml
+          grep "imagePullPolicy:" k8s/manifests/frontend.yaml
+
       - name: Deploy to K8s
         run: |
           kubectl apply -f k8s/manifests/network-policy.yaml
